@@ -1,7 +1,7 @@
 {
   "name": "izzi-spark-auth",
-  "version": "1.0.0",
-  "description": "Better Auth service for izzi Spark with RBAC",
+  "version": "2.0.0",
+  "description": "Better Auth service for izzi Spark with RBAC + Google OAuth + Resend",
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build src/index.ts --outdir ./dist",
@@ -9,14 +9,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "elysia": "latest",
-    "@elysiajs/cors": "latest",
     "@elysiajs/cookie": "latest",
-    "@elysiajs/jwt": "latest",
+    "@elysiajs/cors": "latest",
     "@elysiajs/swagger": "latest",
     "better-auth": "latest",
-    "drizzle-orm": "latest",
-    "@planetscale/database": "latest"
+    "elysia": "latest",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
     "bun-types": "latest",
