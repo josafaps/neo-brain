@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>izzi Spark — Architecture Docs</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+    header {
+      text-align: center;
+      padding: 3rem 0;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 3rem;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #22d3ee 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p { color: #64748b; margin-top: 0.5rem; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+    }
+
+    nav a {
+      color: #94a3b8;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    nav a:hover { background: #1e293b; color: #22d3ee; }
+
+    .section {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .section h2 {
+      font-size: 1.25rem;
+      color: #22d3ee;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .mermaid {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+
+    .mermaid svg { max-width: 100%; }
+
+    code {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.9em;
+      color: #a78bfa;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      color: #475569;
+      font-size: 0.75rem;
+      border-top: 1px solid #1e293b;
+      margin-top: 3rem;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1e293b;
+      color: #94a3b8;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+
+    .toc {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .toc h3 { color: #22d3ee; margin-bottom: 1rem; font-size: 0.9rem; }
+
+    .toc ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.5rem; }
+
+    .toc a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; }
+    .toc a:hover { color: #22d3ee; }
+    .toc a::before { content: "→ "; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>izzi Spark — Architecture Docs</h1>
+      <p>Diagramas Mermaid para documentação técnica • Versão 1.0 • Mai 2026</p>
+    </header>
+
+    <nav>
+      <a href="#org">Estrutura Organizacional</a>
+      <a href="#rbac">Hierarquia RBAC</a>
+      <a href="#techstack">Tech Stack</a>
+      <a href="#business">Fluxo de Negócio</a>
+      <a href="#delegation">Delegação</a>
+      <a href="#infra">Infraestrutura</a>
+      <a href="#states">Estados</a>
+      <a href="#permissions">Permissions Matrix</a>
+      <a href="#feedback">Feedback Loop</a>
+      <a href="#communication">Comunicação</a>
+      <a href="#hats">Six Hats</a>
+    </nav>
+
+    <div class="toc">
+      <h3>📑 Table of Contents</h3>
+      <ul>
+        <li><a href="#org">1. Estrutura Organizacional</a></li>
+        <li><a href="#rbac">2. Hierarquia de Permissões (RBAC)</a></li>
+        <li><a href="#techstack">3. Tech Stack</a></li>
+        <li><a href="#business">4. Fluxo de Decisão de Negócio</a></li>
+        <li><a href="#delegation">5. Fluxo de Delegação entre Agentes</a></li>
+        <li><a href="#dataflow">6. Fluxo de Dados</a></li>
+        <li><a href="#infra">7. Diagrama de Infraestrutura</a></li>
+        <li><a href="#states">8. Estados de Gate de Aprovação</a></li>
+        <li><a href="#permissions">9. Role Permissions Matrix</a></li>
+        <li><a href="#feedback">10. Fluxo de Feedback Loop</a></li>
+        <li><a href="#communication">11. Agent-to-Agent Communication</a></li>
+        <li><a href="#hats">12. Six Thinking Hats</a></li>
+      </ul>
+    </div>
+
+    <!-- 1. Organizational Structure -->
+    <div class="section" id="org">
+      <h2>1. Estrutura Organizacional</h2>
+      <pre class="mermaid">
+graph TB
+    subgraph Leadership["🏛️ Leadership"]
+        CEO["👑 CEO<br/>Josafá<br/><small>Red + Yellow</small>"]
+        CTO["🔧 CTO<br/>Neo<br/><small>Blue + Black</small>"]
+        CFO["💰 CFO Agent<br/><small>White + Black</small>"]
+    end
+
+    subgraph Dev_Team["⚙️ Dev Team"]
+        STAFF["⚙️ Staff Engineer<br/><small>Yellow + Green</small>"]
+        DEV["💻 Dev Agent<br/>Pi.dev<br/><small>Green + Blue</small>"]
+        QA["🔍 QA Lead<br/><small>White + Black</small>"]
+        RELEASE["🚀 Release Engineer<br/><small>Blue + Black</small>"]
+        SECURITY["🛡️ Security Auditor<br/><small>Black + White</small>"]
+    end
+
+    subgraph Ops_Team["📊 Ops Team"]
+        RESEARCH["📊 Research Lead<br/><small>White + Green</small>"]
+        DOCS["📝 Docs Lead<br/><small>White</small>"]
+    end
+
+    subgraph Customer_Success["🎯 Customer Success"]
+        VANGUARD["🎯 Vanguard<br/><small>Red + Yellow</small>"]
+    end
+
+    CEO --> CTO
+    CEO --> CFO
+    CTO --> STAFF
+    CTO --> VANGUARD
+    STAFF --> DEV
+    STAFF --> QA
+    STAFF --> SECURITY
+    QA --> RELEASE
+    CTO --> RESEARCH
+    CTO --> DOCS
+      </pre>
+    </div>
+
+    <!-- 2. RBAC Hierarchy -->
+    <div class="section" id="rbac">
+      <h2>2. Hierarquia de Permissões (RBAC)</h2>
+      <pre class="mermaid">
+graph TB
+    ADMIN["👑 admin<br/>Administrador"]
+    CTO["🔧 cto<br/>CTO"]
+    STAFF["⚙️ staff<br/>Staff Engineer"]
+    DEV["💻 dev<br/>Dev Agent"]
+    QA["🔍 qa<br/>QA Lead"]
+    RELEASE["🚀 release<br/>Release Engineer"]
+    SECURITY["🛡️ security<br/>Security Auditor"]
+    RESEARCH["📊 research<br/>Research Lead"]
+    DOCS["📝 docs<br/>Docs Lead"]
+    VANGUARD["🎯 vanguard<br/>Vanguard"]
+    GUEST["👤 guest<br/>Guest"]
+
+    ADMIN --> CTO
+    CTO --> STAFF
+    STAFF --> DEV
+    STAFF --> QA
+    STAFF --> SECURITY
+    STAFF --> VANGUARD
+    STAFF --> RESEARCH
+    STAFF --> DOCS
+    DEV --> GUEST
+    QA --> GUEST
+    RELEASE --> GUEST
+    SECURITY --> GUEST
+    RESEARCH --> GUEST
+    DOCS --> GUEST
+    VANGUARD --> GUEST
+      </pre>
+    </div>
+
+    <!-- 3. Tech Stack -->
+    <div class="section" id="techstack">
+      <h2>3. Tech Stack</h2>
+      <pre class="mermaid">
+graph LR
+    subgraph Orchestration["📋 Orquestração"]
+        PAPERCLIP["Paperclip<br/><small>Agent coordination</small>"]
+    end
+
+    subgraph Runtime["🏛️ Runtime"]
+        HERMES["Hermes<br/><small>Agent execution</small>"]
+    end
+
+    subgraph Provider["🤖 Provider"]
+        MINIMAX["MiniMax M2.7<br/><small>Token Plan Plus</small>"]
+    end
+
+    subgraph Visualization["🎮 Visualização"]
+        CLAW3D["Claw3D<br/><small>3D office</small>"]
+    end
+
+    subgraph Infrastructure["🖥️ Infraestrutura"]
+        HOSTINGER["Hostinger VPS<br/><small>KVM4</small>"]
+        DOKPLOY["Dokploy<br/><small>host.izzispark.cloud</small>"]
+        CLOUDFLARE["Cloudflare Pages<br/><small>Static sites</small>"]
+    end
+
+    subgraph DevOps["🐙 DevOps"]
+        GITHUB["GitHub<br/><small>CI/CD, code</small>"]
+        CODER["Coder<br/><small>Remote dev</small>"]
+    end
+
+    PAPERCLIP --> HERMES
+    HERMES --> MINIMAX
+    HERMES --> CLAW3D
+    HERMES --> DOKPLOY
+    DOKPLOY --> HOSTINGER
+    DOKPLOY --> CLOUDFLARE
+    GITHUB --> DOKPLOY
+    GITHUB --> CODER
+      </pre>
+    </div>
+
+    <!-- 4. Business Decision Flow -->
+    <div class="section" id="business">
+      <h2>4. Fluxo de Decisão de Negócio</h2>
+      <pre class="mermaid">
+flowchart TD
+    CLIENT["👤 Cliente"] --> VANGUARD
+
+    VANGUARD --> TIER{Tier?}
+    TIER -->|Free| FREE["✅ Free tier<br/>automático"]
+    TIER -->|Discount < 20%| CFO["📋 CFO Approva"]
+    TIER -->|Discount > 20%| CEO["👑 CEO Approva"]
+
+    VANGUARD --> FEEDBACK["📬 Feedback"]
+    FEEDBACK --> TYPE{Tipo?}
+    TYPE -->|Tech| TECH["🔧 Tech issue → CTO"]
+    TYPE -->|Money| MONEY["💰 Custo → CFO"]
+    TYPE -->|Product| ROADMAP["🗺️ Roadmap"]
+
+    CTO --> DEV_TEAM
+    DEV_TEAM --> STAFF_DESIGN["⚙️ Design"]
+    STAFF_DESIGN --> DEV_CODE["💻 Código"]
+    DEV_CODE --> QA_TEST["🔍 Testes"]
+    QA_TEST --> SEC_AUDIT["🛡️ Audit"]
+    SEC_AUDIT --> RELEASE_DEPLOY["🚀 Deploy"]
+      </pre>
+    </div>
+
+    <!-- 5. Agent Delegation Sequence -->
+    <div class="section" id="delegation">
+      <h2>5. Fluxo de Delegação entre Agentes</h2>
+      <pre class="mermaid">
+sequenceDiagram
+    participant C as CEO (Josafá)
+    participant N as Neo (CTO)
+    participant S as Staff Engineer
+    participant D as Pi.dev (Dev)
+    participant Q as QA Lead
+    participant R as Release Engineer
+
+    C->>N: Decisão estratégica
+    Note over N: Blue + Black<br/>Processo + Cautela
+
+    N->>S: Design task
+    Note over S: Yellow + Green<br/>Benefício + Criatividade
+
+    S->>D: Implementar feature
+    Note over D: Green + Blue<br/>Criatividade + Processo
+
+    D->>Q: Validar código
+    Note over Q: White + Black<br/>Fatos + Cautela
+
+    Q->>R: Aprovar deploy
+    Note over R: Blue + Black<br/>Processo + Cautela
+
+    R->>C: Deploy completo
+      </pre>
+    </div>
+
+    <!-- 6. Data Flow -->
+    <div class="section" id="dataflow">
+      <h2>6. Fluxo de Dados (Agent → Auth Service)</h2>
+      <pre class="mermaid">
+sequenceDiagram
+    participant A as Agente A
+    participant AUTH as Auth Service<br/>auth.izzispark.cloud
+    participant DB as Database
+    participant B as Agente B
+
+    A->>AUTH: POST /auth/signin
+    AUTH->>DB: Validar credenciais
+    DB-->>AUTH: User found
+    AUTH-->>A: Token JWT (7 days)
+
+    A->>AUTH: GET /agents/:id<br/>Authorization: Bearer <token>
+    AUTH->>AUTH: Validar token + RBAC
+    AUTH-->>A: Agent details
+
+    A->>AUTH: GET /files/:id/link
+    AUTH->>AUTH: Verificar role + permissions
+    AUTH-->>A: Presigned URL (1h)
+
+    B->>AUTH: Delegate task<br/>Authorization: Bearer <token>
+    AUTH->>AUTH: Verificar delegation rights
+    Note over AUTH: cto pode delegar<br/>para staff/dev/qa/etc
+    AUTH-->>B: Delegation approved
+      </pre>
+    </div>
+
+    <!-- 7. Infrastructure -->
+    <div class="section" id="infra">
+      <h2>7. Diagrama de Infraestrutura (Deploy)</h2>
+      <pre class="mermaid">
+graph TB
+    subgraph Internet["🌐 Internet"]
+        USER["👤 Usuário"] 
+        CDN["☁️ Cloudflare Pages"]
+    end
+
+    subgraph VPS["🖥️ Hostinger KVM4"]
+        subgraph Docker
+            AUTH["🔐 Auth Service<br/>:3001"]
+            HERMES["🏛️ Hermes Gateway<br/>:3000"]
+            DOKPLOY["📦 Dokploy"]
+        end
+
+        subgraph DBs
+            HERMES_DB["📊 Hermes DB<br/>state.db"]
+            AUTH_DB["📊 Auth DB<br/>SQLite"]
+        end
+    end
+
+    subgraph External["🔗 External"]
+        MINIMAX["🤖 MiniMax API"]
+        OBSIDIAN["📓 Obsidian Vault"]
+        GITHUB["🐙 GitHub"]
+    end
+
+    CDN --> HERMES
+    USER --> AUTH
+    HERMES --> HERMES_DB
+    AUTH --> AUTH_DB
+    HERMES --> MINIMAX
+    HERMES --> OBSIDIAN
+    HERMES --> GITHUB
+      </pre>
+    </div>
+
+    <!-- 8. State Diagram -->
+    <div class="section" id="states">
+      <h2>8. Estados de Gate de Aprovação</h2>
+      <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Pending
+
+    state Pending {
+        [*] --> Draft
+        Draft --> Review: Submit
+        Review --> Approved: CEO approve
+        Review --> Rejected: Reject
+        Rejected --> Draft: Revise
+    }
+
+    Approved --> Deployed: Release deploy
+    Deployed --> [*]
+
+    state "Deploy Gate" as DeployGate {
+        [*] --> Queued
+        Queued --> Testing: QA starts
+        Testing --> SecurityScan: Pass
+        Testing --> Failed: Fail
+        SecurityScan --> Approved: No issues
+        SecurityScan --> Blocked: Issues found
+        Blocked --> Queued: Fix
+    }
+      </pre>
+    </div>
+
+    <!-- 9. Permissions Matrix -->
+    <div class="section" id="permissions">
+      <h2>9. Role Permissions Matrix</h2>
+      <pre class="mermaid">
+graph LR
+    ADMIN["👑 admin"]
+    CTO["🔧 cto"]
+    STAFF["⚙️ staff"]
+    DEV["💻 dev"]
+    QA["🔍 qa"]
+    RELEASE["🚀 release"]
+    SECURITY["🛡️ security"]
+    GUEST["👤 guest"]
+
+    ADMIN -->|"*"| ADMIN_P["read, write, deploy,<br/>audit, design, manage"]
+    CTO -->|"read, write, deploy,<br/>audit, design"| CTO_P
+    STAFF -->|"read, write, design"| STAFF_P
+    DEV -->|"read, write"| DEV_P
+    QA -->|"read, test, report"| QA_P
+    RELEASE -->|"read, deploy"| RELEASE_P
+    SECURITY -->|"read, audit, report"| SECURITY_P
+    GUEST -->|"read"| GUEST_P
+
+    ADMIN_P -.-> CTO_P
+    CTO_P -.-> STAFF_P
+    STAFF_P -.-> DEV_P
+    STAFF_P -.-> QA_P
+    STAFF_P -.-> SECURITY_P
+      </pre>
+    </div>
+
+    <!-- 10. Feedback Loop -->
+    <div class="section" id="feedback">
+      <h2>10. Fluxo de Feedback Loop</h2>
+      <pre class="mermaid">
+flowchart LR
+    subgraph Collection
+        VANGUARD["🎯 Vanguard"]
+    end
+
+    subgraph Processing
+        VANGUARD --> ANALYZE{Analyze}
+        ANALYZE --> TECH["🔧 Tech issue"]
+        ANALYZE --> PRODUCT["🗺️ Product idea"]
+        ANALYZE --> COST["💰 Cost concern"]
+    end
+
+    subgraph Action
+        TECH --> CTO
+        PRODUCT --> BACKLOG["📋 Backlog"]
+        COST --> CFO
+    end
+
+    subgraph Resolution
+        CTO --> DEV_TEAM
+        DEV_TEAM --> IMPLEMENT["✅ Implement"]
+        IMPLEMENT --> SHIP["🚀 Ship"]
+        SHIP --> NOTIFY["📬 Notify client"]
+    end
+
+    NOTIFY --> SATISFIED["😊 Client happy"]
+    SATISFIED --> RETENTION["♻️ Retenção"]
+      </pre>
+    </div>
+
+    <!-- 11. Communication Protocol -->
+    <div class="section" id="communication">
+      <h2>11. Agent-to-Agent Communication (Delegation)</h2>
+      <pre class="mermaid">
+flowchart TD
+    subgraph Initiator
+        A["Agent A<br/>CTO (Neo)"]
+        A --> CHECK{"Pode delegar?"}
+        CHECK -->|Yes| CREATE["Criar delegation token"]
+        CHECK -->|No| DENY["Access denied"]
+    end
+
+    subgraph Token
+        CREATE --> PAYLOAD["Payload<br/>sub, role, permissions, exp"]
+        PAYLOAD --> ENCODE["Base64 encode"]
+        ENCODE --> TOKEN["Delegation token"]
+    end
+
+    subgraph Target
+        TOKEN --> B["Agent B<br/>Dev (Pi.dev)"]
+        B --> VALIDATE["Validar token"]
+        VALIDATE --> CHECK_ROLE{"Role permitido?"}
+        CHECK_ROLE -->|Yes| EXEC["Executar task"]
+        CHECK_ROLE -->|No| REJECT["Rejeitar"]
+    end
+
+    EXEC --> LOG["📋 Log acesso"]
+    REJECT --> LOG
+      </pre>
+    </div>
+
+    <!-- 12. Six Hats -->
+    <div class="section" id="hats">
+      <h2>12. Six Thinking Hats Integration</h2>
+      <pre class="mermaid">
+graph TB
+    subgraph Hats
+        WHITE["⚪ White<br/>Facts, Data"]
+        RED["🔴 Red<br/>Emotion, Intuition"]
+        BLACK["⚫ Black<br/>Caution, Risks"]
+        YELLOW["🟡 Yellow<br/>Benefits, Optimism"]
+        GREEN["🟢 Green<br/>Creativity, Ideas"]
+        BLUE["🔵 Blue<br/>Process, Control"]
+    end
+
+    subgraph Agents
+        CEO["CEO - Josafá<br/>Red + Yellow"]
+        CTO["CTO - Neo<br/>Blue + Black"]
+        STAFF["Staff Engineer<br/>Yellow + Green"]
+        DEV["Dev Agent<br/>Green + Blue"]
+        QA["QA Lead<br/>White + Black"]
+        SECURITY["Security Auditor<br/>Black + White"]
+        VANGUARD["Vanguard<br/>Red + Yellow"]
+    end
+
+    CEO --> RED
+    CEO --> YELLOW
+    CTO --> BLUE
+    CTO --> BLACK
+    STAFF --> YELLOW
+    STAFF --> GREEN
+    DEV --> GREEN
+    DEV --> BLUE
+    QA --> WHITE
+    QA --> BLACK
+    SECURITY --> BLACK
+    SECURITY --> WHITE
+    VANGUARD --> RED
+    VANGUARD --> YELLOW
+      </pre>
+    </div>
+
+    <footer>
+      <p>izzi Spark — Architecture Documentation • Mai 2026</p>
+      <p>Gerado com Mermaid.js • Versão 1.0</p>
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1e293b',
+        primaryTextColor: '#e2e8f0',
+        primaryBorderColor: '#22d3ee',
+        lineColor: '#64748b',
+        secondaryColor: '#0f172a',
+        tertiaryColor: '#020617',
+        background: '#020617',
+        mainBkg: '#1e293b',
+        nodeBorder: '#22d3ee',
+        clusterBkg: 'rgba(30, 41, 59, 0.5)',
+        clusterBorder: '#1e293b',
+        titleColor: '#22d3ee',
+        edgeLabelBackground: '#1e293b',
+      },
+      flowchart: { curve: 'basis', padding: 20 },
+      sequence: { actorMargin: 50, showSequenceNumbers: false },
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+company: izzi-spark
+version: "1.0"
+created: "2026-05-23"
+
+# Provider
+provider:
+  name: minimax
+  model: MiniMax-M2.7
+  quota: high
+
+# Runtime
+runtime:
+  engine: hermes
+  gateway: local
+  ws: ws://localhost:3000
+
+# Claw3D
+claw3d:
+  enabled: true
+  office: izzi-spark-office
+  visualization: true
+
+# Teams
+teams:
+  - name: leadership
+    agents:
+      - ceo
+      - cto
+      - cfo
+
+  - name: customer-success
+    agents:
+      - vanguard
+
+  - name: dev
+    agents:
+      - staff-engineer
+      - dev-agent
+      - qa-lead
+      - release-engineer
+      - security-auditor
+
+  - name: ops
+    agents:
+      - research-lead
+      - docs-lead
+
+# Skills
+skills:
+  imported:
+    - gstack
+    - superpowers
+    - aeon-intelligence
+  local:
+    - vanguard/onboarding-workflow
+    - vanguard/feedback-collection
+    - vanguard/pricing-decisions
+    - tradutor-tecnico-ptbr
+
+# Approval Gates
+approval-gates:
+  deploy-production: [ceo]
+  spend-over-100: [ceo]
+  spend-10-100: [cfo]
+  discount-over-20: [ceo]
+  discount-10-20: [cfo]
+  new-agent: [ceo]
+  feature-request: [cto]
+  security-issue: [security-auditor, cto]
+
+# Budget
+budget:
+  monthly-limit: 200
+  categories:
+    cloud: 50
+    apis: 100
+    tools: 50
+
+# Alert Thresholds
+alerts:
+  budget-warning: 0.7
+  budget-alert: 0.9
+  budget-block: 1.0
+
+# Org Chart
+org-chart:
+  ceo:
+    reports: null
+    children:
+      - cto
+      - cfo
+      - vanguard
+
+  cto:
+    reports: ceo
+    children:
+      - staff-engineer
+      - dev-agent
+      - qa-lead
+      - release-engineer
+      - security-auditor
+      - research-lead
+      - docs-lead
+
+  cfo:
+    reports: ceo
+    children: null
+
+  vanguard:
+    reports: ceo, cto
+    children: null
+
+# Six Hats Distribution
+six-hats:
+  ceo: [red, yellow]
+  cto: [blue, black]
+  cfo: [white, black]
+  vanguard: [red, yellow]
+  staff-engineer: [yellow, green]
+  dev-agent: [green, blue]
+  qa-lead: [white, black]
+  release-engineer: [blue, black]
+  security-auditor: [black, white]
+  research-lead: [white, green]
+  docs-lead: [white, blue]
+
+# Claw3D Office Layout
+claw3d-office:
+  reception:
+    - vanguard
+  leadership:
+    - ceo (corner-office)
+    - cto (central-desk)
+    - cfo (finance-area)
+  engineering-floor:
+    - staff-engineer
+    - dev-agent
+    - qa-lead
+    - release-engineer
+    - security-auditor
+  research-area:
+    - research-lead
+    - docs-lead

@@ -1,0 +1,25 @@
+{
+  "name": "izzi-spark-auth",
+  "version": "1.0.0",
+  "description": "Better Auth service for izzi Spark with RBAC",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist",
+    "start": "bun run dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/cors": "latest",
+    "@elysiajs/cookie": "latest",
+    "@elysiajs/jwt": "latest",
+    "@elysiajs/swagger": "latest",
+    "better-auth": "latest",
+    "drizzle-orm": "latest",
+    "@planetscale/database": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "latest"
+  }
+}
